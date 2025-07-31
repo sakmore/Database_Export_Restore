@@ -1,28 +1,206 @@
-#Database Export/Restore Assignment
-This project is my take on building a handy tool 🛠️ for exporting and restoring PostgreSQL database schemas and data. It was a warm-up assignment, and it's packed with practical skills ✨ essential for anyone working with data.Table of ContentsProject OverviewWhat It DoesLibrary DependenciesAssumptionsGetting StartedScript Usage InstructionsNotes on Restore IntegrityChallenges I Ran IntoHow to Verify It WorksWhat I'm Submitting1. Project OverviewThis project centers on the export_restore.py script, a tool for database backup and migration. It captures a complete snapshot 📸 of a PostgreSQL database – its blueprint (schema) and all the actual information (data) – and saves it into simple files. These files can then be used to perfectly rebuild that database state elsewhere, or even just reset the current one. This kind of automation is super useful for development, setting up test environments, or having a reliable way to recover data.2. What It DoesMy export_restore.py script handles two main jobs:Export Mode (Time for a Backup! 💾):Copies your database's blueprint (schema.sql) to a safe spot.Pulls data from agents, leads, and feedback tables, saving each into its own CSV file.Organizes everything neatly inside an exports/ folder.Restore Mode (Bring it Back! ✨):Rebuilds your database's blueprint from schema.sql, clearing out old stuff first for a clean start.Loads data from the CSVs back into the newly built tables efficiently.Fixes auto-incrementing ID numbers (SERIAL primary keys) to prevent conflicts.Command Line Friendly: You just type a straightforward command to tell it if you want to export or restore.Secure Credentials: It uses .env files to keep your sensitive database passwords private 🤫.3. Library DependenciesHere are the Python libraries you'll need for this project. You'll install them directly.psycopg2-binary: For connecting and talking to PostgreSQL databases.python-dotenv: Helps load environment variables from .env files.Faker: (Used only in setup_db.py) Great for generating realistic-looking sample data.You'll also need Python 3.x and pip (Python's package installer).4. AssumptionsTo ensure the script runs smoothly, here are a few assumptions:schema.sql Location: The schema.sql file, containing your database's full DDL (Data Definition Language), is located in the root directory of your project (the same folder as export_restore.py)..env File Structure: Your .env files (e.g., .env, supabase.env) are correctly formatted with DB_HOST, DB_PORT, DB_NAME, DB_USER, and DB_PASSWORD variables.PostgreSQL Access: You have network access to the specified PostgreSQL database instance(s) and the provided credentials have the necessary permissions (e.g., to create/drop tables, insert data).Table Names: The script assumes the tables to be exported/restored are agents, leads, and feedback, and that id is their SERIAL PRIMARY KEY.lead_status ENUM: The lead_status ENUM type is defined in your schema.sql.5. Getting StartedTo get this project up and running:5.1. PrerequisitesPython 3.x: Make sure it's installed.pip: Python's package installer.PostgreSQL Database: You'll need access to a PostgreSQL instance. Running one locally with Docker is a good option, or you can use a cloud service like Supabase.pgAdmin: A graphical tool can be very helpful for verifying database contents.5.2. File OrganizationEnsure all project files (.env, export_restore.py, requirements.txt, schema.sql, setup_db.py) are in the same directory.5.3. Install DependenciesOpen your terminal and install the necessary Python libraries directly:pip install psycopg2-binary
-pip install python-dotenv
-pip install Faker
-5.4. Database Schema and Initial Data Setupschema.sql Configuration:Important: At the very top of your schema.sql file, before any CREATE statements, include these DROP commands. They act as a reset button 🔄, ensuring a clean slate for schema recreation:-- Drop tables with CASCADE to handle foreign key dependencies gracefully
-DROP TABLE IF EXISTS feedback CASCADE;
-DROP TABLE IF EXISTS leads CASCADE;
-DROP TABLE IF EXISTS agents CASCADE;
+# Database Export/Restore Tool 🛠️
 
--- Drop custom types (like your ENUM)
-DROP TYPE IF EXISTS lead_status;
-Environment Variables (.env):Create a .env file in your project's root directory to store your database connection details.# .env
-DB_HOST=your_database_host  # e.g., localhost or db.xxxxxxxxxxxx.supabase.co
+A PostgreSQL database backup and migration utility for exporting and restoring database schemas and data with integrity checks.
+
+## Table of Contents
+
+- [Script Usage Instructions](#script-usage-instructions)
+- [Library Dependencies](#library-dependencies)
+- [Assumptions](#assumptions)
+- [Notes on Restore Integrity](#notes-on-restore-integrity)
+- [Setup and Installation](#setup-and-installation)
+- [Project Files](#project-files)
+- [Verification](#verification)
+
+## Script Usage Instructions
+
+### Prerequisites
+Ensure you have Python 3.x installed and all dependencies from `requirements.txt`.
+
+### Environment Setup
+Create a `.env` file with your database credentials:
+
+```env
+DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=your_database_name # e.g., postgres
-DB_USER=your_database_user # e.g., postgres
-DB_PASSWORD=your_database_password
-Remember to replace these placeholders with your actual database credentials.Initial Database Population:Run the setup_db.py script. This will create the tables in your database and fill them with some initial sample data. This is your starting point for the export.python setup_db.py
-6. Script Usage InstructionsThe export_restore.py script is run from your command line 💻. You'll specify the mode and point to your --env-file.6.1. Exporting the Database (Making a Backup)This command connects to your database, copies its schema.sql blueprint, and dumps all table data into CSV files in the exports/ directory.python export_restore.py export --env-file .env
-What to expect: You'll see messages confirming the connection, schema export, and data being pulled from each table. Afterward, an exports/ folder will appear, containing schema.sql and your CSV files.6.2. Restoring the Database (Putting it Back)This command connects to the database, recreates the schema from exports/schema.sql, and then loads the data from the CSV files into the tables.python export_restore.py restore --env-file .env
-What to expect: Messages about connecting, schema restoration, data loading for each table, and those ID counters being adjusted.6.3. Restoring to a Different Database (e.g., Supabase)If you want to move your data to a new database instance, like one hosted on Supabase:Create a new environment file (e.g., supabase.env) with the credentials for your target Supabase database.# supabase.env
-DB_HOST=db.qfyzwcwesxhihdplzuqw.supabase.co
+DB_NAME=your_database
+DB_USER=your_username
+DB_PASSWORD=your_password
+```
+
+### Initial Database Setup
+Populate your database with sample data:
+
+```bash
+python setup_db.py
+```
+
+### Export Database 📤
+Export schema and data to the `exports/` folder:
+
+```bash
+python export_restore.py export --env-file .env
+```
+
+This creates:
+- `exports/schema.sql` - Database structure
+- `exports/agents.csv` - Agents table data
+- `exports/leads.csv` - Leads table data
+- `exports/feedback.csv` - Feedback table data
+
+### Restore Database 📥
+Restore schema and data from exports:
+
+```bash
+python export_restore.py restore --env-file .env
+```
+
+### Cross-Environment Migration 🚀
+To migrate to a different database (e.g., Supabase):
+
+1. Create target environment file:
+```env
+# supabase.env
+DB_HOST=db.your-project.supabase.co
 DB_PORT=5432
 DB_NAME=postgres
 DB_USER=postgres
-DB_PASSWORD=your_actual_supabase_password # Make sure this is your real password!
-Run the restore command, pointing to this new environment file:python export_restore.py restore --env-file supabase.env
-7. Notes on Restore IntegrityThis project highlights critical database integrity concepts, essential for reliable backup and restore operations:Idempotency: The restore process is designed to be repeatable. By including DROP statements in schema.sql, running the script multiple times will consistently result in the same database state without errors from pre-existing objects.Schema Consistency (including ENUM types): Using the provided schema.sql ensures the database structure is precisely recreated. This includes custom ENUM types (like lead_status), SERIAL PRIMARY KEYs, FOREIGN KEY constraints, and DEFAULT values.Foreign Key Dependency Handling: Tables are restored in a specific order (agents, leads, feedback) to correctly manage foreign key relationships and prevent data loading errors.SERIAL Primary Key Sequence Adjustment: After bulk data loading, PostgreSQL's SERIAL sequences don't auto-update. The script explicitly uses setval() to reset these sequences to MAX(id) + 1 from the restored data, preventing primary key conflicts on subsequent inserts.Efficient Data Loading (COPY FROM): Data is loaded using psycopg2's copy_from for high performance. The process also correctly converts empty strings in CSVs to NULL values in the database.8. Challenges I Ran IntoBuilding this script had its moments! Here are some common hurdles I encountered, which are good to be aware of:Understanding Restore Logic: Initially, I had to clarify that the restore process re-inserts the exact exported data, not new random data like Faker generates. It's a snapshot, not a re-roll.schema.sql and Idempotency: A common trap was trying to CREATE TABLE when it already existed. Adding DROP TABLE and DROP TYPE statements to schema.sql was crucial for making the restore repeatable without errors.datetime and NULL Handling in CSVs: Getting Python's datetime objects to export as simple text and ensuring empty CSV cells correctly translated to NULL in the database during import required specific type handling and using io.StringIO with null=''.The Sneaky SERIAL Sequence Problem: This was a tricky one. After copy_from loads data, the SERIAL primary key counters don't automatically update. This led to "duplicate key" errors on new inserts. Implementing setval() to reset these sequences based on the highest existing ID was a key fix.Overcoming these specific challenges really helped solidify my understanding of PostgreSQL and robust scripting. 💪9. How to Verify It WorksTo confirm everything's running smoothly and the restore is solid:Initial State: Run python setup_db.py to get a fresh baseline.Export: Run python export_restore.py export --env-file .env. Check your exports/ folder to see the backup files.Make a Change: Manually delete or modify a record in your database using pgAdmin or psql (e.g., DELETE FROM leads WHERE id = 1;).Restore: Run python export_restore.py restore --env-file .env (or supabase.env if you're restoring to the cloud).Final Check: Connect to the database (local or Supabase) via pgAdmin or the Supabase dashboard.Confirm row counts match your exported CSVs.Verify that the record you changed or deleted in step 3 has been restored to its original state.(Optional but recommended) Try inserting a new record to ensure SERIAL IDs are still auto-incrementing correctly.10. What I'm SubmittingHere's what's included in my project submission:export_restore.py: The main Python script.setup_db.py: The script for initial database setup and population.schema.sql: The database schema definition, including DROP statements..env: The environment file for database credentials.requirements.txt: List of Python dependencies.Screenshots (as part of your submission):Terminal output showing a successful export execution.File explorer view of the exports/ folder and its contents.Terminal output showing a successful restore execution (ideally to Supabase).pgAdmin or Supabase dashboard screenshot confirming restored schema and data.
+DB_PASSWORD=your_supabase_password
+```
+
+2. Run restore with target environment:
+```bash
+python export_restore.py restore --env-file supabase.env
+```
+
+## Library Dependencies
+
+Install the following Python packages:
+
+```bash
+pip install psycopg2-binary python-dotenv faker
+```
+
+**Required Libraries:**
+- `psycopg2-binary` - PostgreSQL database adapter for Python
+- `python-dotenv` - Load environment variables from .env files
+- `faker` - Generate sample data (used in setup_db.py)
+
+**System Requirements:**
+- Python 3.x
+- PostgreSQL database access
+- Network connectivity to target database
+
+## Assumptions
+
+The script operates under these assumptions:
+
+- **Schema File Location**: `schema.sql` is located in the project root directory
+- **Environment Files**: `.env` files contain `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD` variables
+- **Database Access**: User has sufficient privileges for DDL operations (CREATE/DROP tables, types)
+- **Table Structure**: Tables `agents`, `leads`, `feedback` exist with `id` as SERIAL PRIMARY KEY
+- **Custom Types**: `lead_status` ENUM type is defined in the schema
+- **Foreign Keys**: Tables have proper foreign key relationships (agents ← leads ← feedback)
+
+## Notes on Restore Integrity
+
+### How Sequences Are Handled
+After importing data via `COPY FROM`, PostgreSQL's SERIAL sequences don't automatically update. The script fixes this by:
+
+```sql
+SELECT setval('table_name_id_seq', COALESCE(MAX(id), 1)) FROM table_name;
+```
+
+This prevents "duplicate key" errors when inserting new records after restore.
+
+### Enum Types Management
+The script handles custom ENUM types by:
+- Dropping existing types before schema recreation: `DROP TYPE IF EXISTS lead_status`
+- Recreating types as defined in `schema.sql`
+- Ensuring data compatibility during import
+
+### Idempotent Operations ✅
+The restore process is repeatable through:
+- **Clean Slate Approach**: DROP statements in `schema.sql` remove existing objects
+- **Dependency Order**: Tables restored in correct sequence (agents → leads → feedback)
+- **Constraint Handling**: Foreign keys and constraints properly managed
+
+### Schema Requirements
+Your `schema.sql` must include these DROP statements at the top:
+
+```sql
+-- Clean slate for idempotent restores
+DROP TABLE IF EXISTS feedback CASCADE;
+DROP TABLE IF EXISTS leads CASCADE;
+DROP TABLE IF EXISTS agents CASCADE;
+DROP TYPE IF EXISTS lead_status;
+```
+
+### Data Integrity Features
+- **NULL Handling**: Empty CSV cells properly converted to NULL values
+- **Foreign Key Management**: Tables restored in dependency order
+- **Transaction Safety**: Operations wrapped in transactions where applicable
+- **Error Handling**: Comprehensive error checking and reporting
+
+## Setup and Installation
+
+### 1. Clone Repository
+```bash
+git clone <repository-url>
+cd database-export-restore
+```
+
+### 2. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Configure Environment
+Copy and modify the sample `.env` file with your database credentials.
+
+### 4. Initialize Database
+```bash
+python setup_db.py
+```
+
+### 5. Test Export/Restore
+```bash
+# Export
+python export_restore.py export --env-file .env
+
+# Restore  
+python export_restore.py restore --env-file .env
+```
+
+## Project Files
+
+```
+├── setup_db.py         # Database initialization script
+├── export_restore.py   # Main export/restore functionality  
+├── schema.sql          # Database schema definition
+├── .env               # Database credentials (sample with obfuscated values)
+├── requirements.txt   # Python dependencies
+├── README.md          # This documentation
+└── exports/           # Generated backup files (sample export included)
+    ├── schema.sql
+    ├── agents.csv
+    ├── leads.csv
+    └── feedback.csv
+```
+
+## Verification
+
+### Testing Complete Workflow
+1. **Baseline**: Run `python setup_db.py` for fresh data
+2. **Export**: Run export command and verify `exports/` folder contents
+3. **Modify**: Delete or update records in your database
+4. **Restore**: Run restore command  
+5. **Validate**: Confirm original data is restored
+6. **Test Sequences**: Insert new records to verify auto-incrementing works
+
+### Common Issues and Solutions ⚠️
+- **Authentication failures**: Verify credentials in `.env` file
+- **Table exists errors**: Ensure DROP statements are in `schema.sql`
+- **Duplicate key errors**: Indicates sequence adjustment issues
+- **Foreign key violations**: Check table restore order and data consistency
+
