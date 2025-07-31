@@ -1,0 +1,23 @@
+id,full_name,email,phone,status,created_at,assigned_agent_id
+1,Kelly Snyder,robertstewart@example.org,940.444.1950x99857,rejected,2025-07-31 19:11:36,3
+2,Nicole Robertson,carolinekaiser@example.org,902-706-1326x444,rejected,2025-07-31 19:11:16,5
+3,Nicolas Richards,timothy64@example.org,001-802-871-9899,converted,2025-07-31 19:09:01,1
+4,Andrew Ross,michaelfoster@example.com,(219)687-5184,converted,2025-07-31 19:12:36,1
+5,Patricia Ewing,seth98@example.org,(635)742-4414x118,rejected,2025-07-31 19:12:21,2
+6,Jessica Rios,joseph67@example.org,818-927-3005,contacted,2025-07-31 19:11:50,2
+7,Elaine Harrison,harristimothy@example.com,+1-520-972-0993x75591,rejected,2025-07-31 19:12:57,3
+8,Mary Holmes,loriholland@example.net,(295)852-4057x4794,rejected,2025-07-31 19:12:14,5
+9,Jesse Yang,jason22@example.net,(901)919-8025x049,rejected,2025-07-31 19:07:49,
+10,Richard Singh,sanchezedward@example.com,(738)522-8385x17286,converted,2025-07-31 19:09:42,3
+11,Elizabeth Martinez,zrangel@example.net,(987)427-8097x880,rejected,2025-07-31 19:12:24,7
+12,Maria Ellison MD,jrichmond@example.com,548-343-4520,rejected,2025-07-31 19:12:18,3
+13,Jessica Patterson,scottgarza@example.com,658.843.4776x170,contacted,2025-07-31 19:09:55,
+14,Shane Morris,rrobbins@example.com,+1-757-381-7650,contacted,2025-07-31 19:07:21,
+15,Angela Moran,comptonsteven@example.com,557-311-7298x1353,contacted,2025-07-31 19:11:25,
+16,Taylor Francis,chrisgraham@example.org,+1-290-766-0875x27650,contacted,2025-07-31 19:07:27,
+17,Joshua Maldonado,juareznorma@example.com,714.989.4827,converted,2025-07-31 19:07:32,
+18,Michelle Chan,kenneth61@example.org,3874364879,contacted,2025-07-31 19:10:47,2
+19,Julian Adkins,timothyballard@example.net,(653)563-2359,contacted,2025-07-31 19:12:38,
+20,Colton Ortiz,duncanjasmine@example.org,001-894-523-8417,contacted,2025-07-31 19:09:18,2
+21,Jeffrey Parker,jasonbishop@example.net,(906)971-3357x6416,contacted,2025-07-31 19:08:02,3
+22,Keith Walls,harristeresa@example.org,241.963.0289x6778,converted,2025-07-31 19:07:20,4
